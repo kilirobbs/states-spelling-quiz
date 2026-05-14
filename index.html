@@ -257,6 +257,29 @@
     .timer-center.urgent { color: var(--red); }
     .timer-sub { font-size: 13px; color: var(--text3); margin-top: 6px; }
 
+    .replay-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text2);
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-bottom: 12px;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .replay-btn:active { transform: scale(0.98); background: var(--surface); }
+    .replay-btn-icon { font-size: 18px; }
+
     .done-btn {
       width: 100%;
       padding: 22px;
@@ -453,8 +476,8 @@
 
     .result-btns {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
     }
   </style>
 </head>
@@ -480,6 +503,7 @@ const app = {
   screen: 'welcome',
   batchSize: 10,
   queue: [],
+  lastQueue: [],
   current: 0,
   results: [],
   timerVal: 30,
@@ -527,13 +551,18 @@ function stopTimer() {
   app.timerExpired = false;
 }
 
-function startQuiz() {
-  app.queue = shuffle(STATES).slice(0, app.batchSize);
+function beginRound(queue) {
+  app.queue = queue;
+  app.lastQueue = [...queue];
   app.current = 0;
   app.results = [];
   app.screen = 'quiz';
   render();
   setTimeout(() => { speak(app.queue[0]); startTimer(); }, 350);
+}
+
+function startQuiz() {
+  beginRound(shuffle(STATES).slice(0, app.batchSize));
 }
 
 function goToReveal() {
@@ -619,6 +648,9 @@ function renderQuiz() {
           </div>
         </div>
       </div>
+      <button class="replay-btn" id="replay-btn">
+        <span class="replay-btn-icon">🔊</span> Hear it again
+      </button>
       <button class="done-btn" id="done-btn">Done Writing</button>
       <p class="hint">Write the state name on paper,<br>then tap when you're finished.</p>
     </div>`;
@@ -660,8 +692,9 @@ function renderResults() {
         <div class="perfect-box">You nailed every one — perfect round! 🎉</div>
       `}
       <div class="result-btns">
-        <button class="btn-secondary" id="retry-btn" ${missed.length===0?'disabled':''}>Practice missed</button>
-        <button class="btn-primary"   id="new-btn">New round</button>
+        <button class="btn-secondary" id="retry-btn" ${missed.length===0?'disabled':''}>Practice<br>missed</button>
+        <button class="btn-secondary" id="repeat-btn">Repeat<br>this round</button>
+        <button class="btn-primary"   id="new-btn">New<br>round</button>
       </div>
     </div>`;
 }
@@ -683,6 +716,9 @@ function bind() {
   const s = document.getElementById('start-btn');
   if (s) s.addEventListener('click', startQuiz);
 
+  const rp = document.getElementById('replay-btn');
+  if (rp) rp.addEventListener('click', () => speak(app.queue[app.current]));
+
   const d = document.getElementById('done-btn');
   if (d) d.addEventListener('click', goToReveal);
 
@@ -695,17 +731,14 @@ function bind() {
   const n = document.getElementById('new-btn');
   if (n) n.addEventListener('click', () => { app.screen='welcome'; render(); });
 
+  const rep = document.getElementById('repeat-btn');
+  if (rep) rep.addEventListener('click', () => beginRound(shuffle(app.lastQueue)));
+
   const r = document.getElementById('retry-btn');
   if (r) r.addEventListener('click', () => {
     const missed = app.results.filter(r=>!r.correct).map(r=>r.state);
     if (!missed.length) return;
-    app.queue    = shuffle(missed);
-    app.batchSize = missed.length;
-    app.current  = 0;
-    app.results  = [];
-    app.screen   = 'quiz';
-    render();
-    setTimeout(() => { speak(app.queue[0]); startTimer(); }, 350);
+    beginRound(shuffle(missed));
   });
 }
 
