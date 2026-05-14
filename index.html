@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="States Quiz" />
+  <title>States Spelling Quiz</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #FAFAF8;
+      --surface: #FFFFFF;
+      --surface2: #F3F2EE;
+      --text1: #1C1C1A;
+      --text2: #6B6B66;
+      --text3: #A8A8A2;
+      --border: rgba(0,0,0,0.1);
+      --border2: rgba(0,0,0,0.18);
+      --amber: #BA7517;
+      --amber-bg: #FAEEDA;
+      --amber-text: #633806;
+      --amber-dark: #854F0B;
+      --amber-mid: #FAC775;
+      --red: #E24B4A;
+      --red-bg: #FCEBEB;
+      --red-text: #501313;
+      --red-border: #F7C1C1;
+      --green-bg: #EAF3DE;
+      --green-text: #27500A;
+      --green-border: #C0DD97;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1A1A18;
+        --surface: #242422;
+        --surface2: #2E2E2B;
+        --text1: #F0EFEA;
+        --text2: #9A9A93;
+        --text3: #5A5A55;
+        --border: rgba(255,255,255,0.1);
+        --border2: rgba(255,255,255,0.18);
+        --amber: #EF9F27;
+        --amber-bg: #2C1F08;
+        --amber-text: #FAC775;
+        --amber-dark: #FAC775;
+        --amber-mid: #854F0B;
+        --red: #F09595;
+        --red-bg: #2C1010;
+        --red-text: #F7C1C1;
+        --red-border: #791F1F;
+        --green-bg: #0F2208;
+        --green-text: #C0DD97;
+        --green-border: #3B6D11;
+      }
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text1);
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #root {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 48px 24px 40px;
+    }
+
+    .screen {
+      width: 100%;
+      max-width: 480px;
+      animation: fadeUp 0.3s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Welcome ──────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: var(--radius-md);
+      background: var(--amber-bg);
+      color: var(--amber-text);
+      margin-bottom: 16px;
+    }
+
+    .title {
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--text1);
+      line-height: 1.2;
+      margin-bottom: 10px;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: var(--text2);
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .section-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text2);
+      margin-bottom: 12px;
+      letter-spacing: 0.03em;
+    }
+
+    .batch-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .batch-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .batch-card:active { transform: scale(0.96); }
+
+    .batch-card.selected {
+      border-color: var(--amber);
+      background: var(--amber-bg);
+    }
+
+    .batch-card .num {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text1);
+      line-height: 1;
+    }
+
+    .batch-card .lbl {
+      font-size: 12px;
+      color: var(--text2);
+      margin-top: 4px;
+    }
+
+    .batch-card.selected .num { color: var(--amber-text); }
+    .batch-card.selected .lbl { color: var(--amber-text); opacity: 0.8; }
+
+    /* ── Buttons ──────────────────────────────────────── */
+    .btn-primary {
+      width: 100%;
+      padding: 17px;
+      font-size: 17px;
+      font-weight: 600;
+      border-radius: var(--radius-lg);
+      background: var(--amber);
+      color: var(--amber-bg);
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.01em;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .btn-primary:active { transform: scale(0.98); filter: brightness(0.9); }
+    .btn-primary:disabled { opacity: 0.35; cursor: default; }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 15px;
+      font-size: 16px;
+      font-weight: 500;
+      border-radius: var(--radius-lg);
+      background: var(--surface);
+      border: 1.5px solid var(--border2);
+      color: var(--text1);
+      cursor: pointer;
+      transition: all 0.15s;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .btn-secondary:active { transform: scale(0.98); background: var(--surface2); }
+    .btn-secondary:disabled { opacity: 0.35; cursor: default; }
+
+    /* ── Quiz screen ──────────────────────────────────── */
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .counter { font-size: 14px; color: var(--text2); font-weight: 500; }
+
+    .progress-wrap {
+      background: var(--surface2);
+      border-radius: 99px;
+      height: 5px;
+      margin-bottom: 40px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--amber);
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+
+    .timer-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+
+    .timer-ring { overflow: visible; transform: rotate(-90deg); }
+    .timer-bg { fill: none; stroke: var(--surface2); stroke-width: 11; }
+    .timer-fg { fill: none; stroke: var(--amber); stroke-width: 11; stroke-linecap: round; transition: stroke-dashoffset 1s linear, stroke 0.4s; }
+    .timer-fg.urgent { stroke: var(--red); }
+
+    .timer-center {
+      font-size: 58px;
+      font-weight: 700;
+      color: var(--text1);
+      line-height: 1;
+      margin-top: -8px;
+      transition: color 0.4s;
+      letter-spacing: -2px;
+    }
+
+    .timer-center.urgent { color: var(--red); }
+    .timer-sub { font-size: 13px; color: var(--text3); margin-top: 6px; }
+
+    .done-btn {
+      width: 100%;
+      padding: 22px;
+      font-size: 22px;
+      font-weight: 700;
+      border-radius: var(--radius-lg);
+      background: var(--amber);
+      color: var(--amber-bg);
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.01em;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .done-btn:active { transform: scale(0.98); filter: brightness(0.9); }
+
+    .hint {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text3);
+      margin-top: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── Alert banner ─────────────────────────────────── */
+    .alert-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 16px;
+      border-radius: var(--radius-md);
+      background: var(--amber-bg);
+      border: 1px solid var(--amber-mid);
+      color: var(--amber-text);
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 24px;
+      animation: fadeUp 0.3s ease;
+    }
+
+    .alert-icon { font-size: 20px; flex-shrink: 0; }
+
+    /* ── Reveal screen ────────────────────────────────── */
+    .reveal-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px 24px;
+      text-align: center;
+      margin: 20px 0 24px;
+    }
+
+    .reveal-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 12px;
+    }
+
+    .reveal-state {
+      font-size: 46px;
+      font-weight: 700;
+      color: var(--text1);
+      letter-spacing: -1px;
+      line-height: 1.1;
+    }
+
+    .judge-prompt {
+      font-size: 15px;
+      color: var(--text2);
+      margin-bottom: 14px;
+    }
+
+    .judge-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .btn-correct {
+      padding: 18px 12px;
+      font-size: 17px;
+      font-weight: 600;
+      border-radius: var(--radius-lg);
+      background: var(--green-bg);
+      color: var(--green-text);
+      border: 1.5px solid var(--green-border);
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .btn-correct:active { transform: scale(0.97); }
+
+    .btn-wrong {
+      padding: 18px 12px;
+      font-size: 17px;
+      font-weight: 600;
+      border-radius: var(--radius-lg);
+      background: var(--red-bg);
+      color: var(--red-text);
+      border: 1.5px solid var(--red-border);
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .btn-wrong:active { transform: scale(0.97); }
+
+    /* ── Results screen ───────────────────────────────── */
+    .result-score {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .score-big {
+      font-size: 72px;
+      font-weight: 800;
+      color: var(--text1);
+      line-height: 1;
+      letter-spacing: -3px;
+    }
+
+    .score-denom {
+      font-size: 36px;
+      font-weight: 500;
+      color: var(--text2);
+    }
+
+    .score-label { font-size: 14px; color: var(--text2); margin-top: 8px; }
+
+    .result-msg {
+      font-size: 17px;
+      color: var(--text2);
+      line-height: 1.5;
+      margin-top: 12px;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 24px 0;
+    }
+
+    .missed-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 12px;
+    }
+
+    .missed-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+
+    .missed-tag {
+      font-size: 14px;
+      padding: 6px 13px;
+      border-radius: var(--radius-md);
+      background: var(--red-bg);
+      color: var(--red-text);
+      border: 1px solid var(--red-border);
+      font-weight: 500;
+    }
+
+    .perfect-box {
+      text-align: center;
+      padding: 20px;
+      background: var(--surface2);
+      border-radius: var(--radius-lg);
+      font-size: 15px;
+      color: var(--text2);
+      margin-bottom: 32px;
+    }
+
+    .result-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+const STATES = [
+  "Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut",
+  "Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa",
+  "Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan",
+  "Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire",
+  "New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio",
+  "Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota",
+  "Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia",
+  "Wisconsin","Wyoming"
+];
+
+const R = 72;
+const CIRC = +(2 * Math.PI * R).toFixed(2);
+
+const app = {
+  screen: 'welcome',
+  batchSize: 10,
+  queue: [],
+  current: 0,
+  results: [],
+  timerVal: 30,
+  timerInterval: null,
+  timerExpired: false,
+};
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = 0.82;
+  u.pitch = 1;
+  u.volume = 1;
+  window.speechSynthesis.speak(u);
+}
+
+function startTimer() {
+  if (app.timerInterval) clearInterval(app.timerInterval);
+  app.timerVal = 30;
+  app.timerExpired = false;
+  app.timerInterval = setInterval(() => {
+    app.timerVal--;
+    if (app.timerVal <= 0) {
+      clearInterval(app.timerInterval);
+      app.timerInterval = null;
+      app.timerExpired = true;
+    }
+    render();
+  }, 1000);
+}
+
+function stopTimer() {
+  if (app.timerInterval) clearInterval(app.timerInterval);
+  app.timerInterval = null;
+  app.timerExpired = false;
+}
+
+function startQuiz() {
+  app.queue = shuffle(STATES).slice(0, app.batchSize);
+  app.current = 0;
+  app.results = [];
+  app.screen = 'quiz';
+  render();
+  setTimeout(() => { speak(app.queue[0]); startTimer(); }, 350);
+}
+
+function goToReveal() {
+  stopTimer();
+  app.screen = 'reveal';
+  render();
+}
+
+function markResult(correct) {
+  app.results.push({ state: app.queue[app.current], correct });
+  app.current++;
+  if (app.current >= app.queue.length) {
+    app.screen = 'results';
+    render();
+  } else {
+    app.screen = 'quiz';
+    render();
+    setTimeout(() => { speak(app.queue[app.current]); startTimer(); }, 350);
+  }
+}
+
+function getMessage(score, total) {
+  const p = score / total;
+  if (p === 1) return "Perfect score! You spelled every state correctly!";
+  if (p >= 0.9) return "Amazing — so close to perfect! Just a couple to practice.";
+  if (p >= 0.7) return "Great job! A little more practice on those tricky ones.";
+  if (p >= 0.5) return "Good effort — you're making real progress!";
+  return "Keep going — every practice session makes you better!";
+}
+
+/* ── Render ─────────────────────────────────────────── */
+
+function renderWelcome() {
+  return `
+    <div class="screen">
+      <div class="badge">US States Spelling Quiz</div>
+      <h1 class="title">Time to spell some states!</h1>
+      <p class="subtitle">You'll hear each state name read aloud. Write it on paper, then check your answer.</p>
+      <p class="section-label">How many states per round?</p>
+      <div class="batch-grid">
+        ${[10,25,50].map(n => `
+          <div class="batch-card ${app.batchSize===n?'selected':''}" data-batch="${n}">
+            <div class="num">${n}</div>
+            <div class="lbl">${n===50?'all states':'states'}</div>
+          </div>
+        `).join('')}
+      </div>
+      <button class="btn-primary" id="start-btn">Start Quiz</button>
+    </div>`;
+}
+
+function renderQuiz() {
+  const total = app.queue.length;
+  const done  = app.current;
+  const pct   = (done / total) * 100;
+  const t     = app.timerVal;
+  const offset = +(CIRC - (t / 30) * CIRC).toFixed(2);
+  const urgent = t <= 10;
+  return `
+    <div class="screen">
+      <div class="top-row">
+        <span class="counter">State ${done+1} of ${total}</span>
+        <span class="counter">${app.results.filter(r=>r.correct).length} correct</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-fill" style="width:${pct}%"></div>
+      </div>
+      ${app.timerExpired ? `
+        <div class="alert-banner">
+          <span class="alert-icon">⏰</span>
+          Time's up — check your spelling and tap Done when you're ready.
+        </div>` : ''}
+      <div class="timer-wrap">
+        <div style="position:relative;width:176px;height:176px;">
+          <svg class="timer-ring" width="176" height="176" viewBox="0 0 176 176" style="position:absolute;top:0;left:0">
+            <circle class="timer-bg" cx="88" cy="88" r="${R}"/>
+            <circle class="timer-fg ${urgent?'urgent':''}" cx="88" cy="88" r="${R}"
+              stroke-dasharray="${CIRC}" stroke-dashoffset="${offset}"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <div class="timer-center ${urgent?'urgent':''}">${t}</div>
+            <div class="timer-sub">seconds</div>
+          </div>
+        </div>
+      </div>
+      <button class="done-btn" id="done-btn">Done Writing</button>
+      <p class="hint">Write the state name on paper,<br>then tap when you're finished.</p>
+    </div>`;
+}
+
+function renderReveal() {
+  const s = app.queue[app.current];
+  return `
+    <div class="screen">
+      <p class="judge-prompt">Compare your paper to the answer:</p>
+      <div class="reveal-card">
+        <div class="reveal-label">Correct spelling</div>
+        <div class="reveal-state">${s}</div>
+      </div>
+      <p class="judge-prompt">Did you spell it right?</p>
+      <div class="judge-grid">
+        <button class="btn-correct" id="correct-btn">✓&nbsp; Yes, I got it</button>
+        <button class="btn-wrong"   id="wrong-btn">✗&nbsp; Not quite</button>
+      </div>
+    </div>`;
+}
+
+function renderResults() {
+  const correct = app.results.filter(r=>r.correct).length;
+  const total   = app.results.length;
+  const missed  = app.results.filter(r=>!r.correct).map(r=>r.state);
+  return `
+    <div class="screen">
+      <div class="result-score">
+        <div class="score-big">${correct}<span class="score-denom">/${total}</span></div>
+        <div class="score-label">states spelled correctly</div>
+        <p class="result-msg">${getMessage(correct, total)}</p>
+      </div>
+      <div class="divider"></div>
+      ${missed.length > 0 ? `
+        <div class="missed-label">Practice these next time</div>
+        <div class="missed-tags">${missed.map(m=>`<span class="missed-tag">${m}</span>`).join('')}</div>
+      ` : `
+        <div class="perfect-box">You nailed every one — perfect round! 🎉</div>
+      `}
+      <div class="result-btns">
+        <button class="btn-secondary" id="retry-btn" ${missed.length===0?'disabled':''}>Practice missed</button>
+        <button class="btn-primary"   id="new-btn">New round</button>
+      </div>
+    </div>`;
+}
+
+function render() {
+  const root = document.getElementById('root');
+  if      (app.screen==='welcome') root.innerHTML = renderWelcome();
+  else if (app.screen==='quiz')    root.innerHTML = renderQuiz();
+  else if (app.screen==='reveal')  root.innerHTML = renderReveal();
+  else if (app.screen==='results') root.innerHTML = renderResults();
+  bind();
+}
+
+function bind() {
+  document.querySelectorAll('.batch-card').forEach(el => {
+    el.addEventListener('click', () => { app.batchSize = parseInt(el.dataset.batch); render(); });
+  });
+
+  const s = document.getElementById('start-btn');
+  if (s) s.addEventListener('click', startQuiz);
+
+  const d = document.getElementById('done-btn');
+  if (d) d.addEventListener('click', goToReveal);
+
+  const c = document.getElementById('correct-btn');
+  if (c) c.addEventListener('click', () => markResult(true));
+
+  const w = document.getElementById('wrong-btn');
+  if (w) w.addEventListener('click', () => markResult(false));
+
+  const n = document.getElementById('new-btn');
+  if (n) n.addEventListener('click', () => { app.screen='welcome'; render(); });
+
+  const r = document.getElementById('retry-btn');
+  if (r) r.addEventListener('click', () => {
+    const missed = app.results.filter(r=>!r.correct).map(r=>r.state);
+    if (!missed.length) return;
+    app.queue    = shuffle(missed);
+    app.batchSize = missed.length;
+    app.current  = 0;
+    app.results  = [];
+    app.screen   = 'quiz';
+    render();
+    setTimeout(() => { speak(app.queue[0]); startTimer(); }, 350);
+  });
+}
+
+render();
+</script>
+</body>
+</html>
